@@ -1,0 +1,28 @@
+newmain.c: In function ‘main’:
+newmain.c:40:22: warning: implicit declaration of function ‘calloc’ [-Wimplicit-function-declaration]
+  my_items = (ITEM **)calloc(n_choices + 1, sizeof(ITEM *));
+                      ^~~~~~
+newmain.c:40:22: warning: incompatible implicit declaration of built-in function ‘calloc’
+newmain.c:40:22: note: include ‘<stdlib.h>’ or provide a declaration of ‘calloc’
+/tmp/cc5sXINX.o: In function `main':
+newmain.c:(.text+0x11): undefined reference to `initscr'
+newmain.c:(.text+0x16): undefined reference to `cbreak'
+newmain.c:(.text+0x1b): undefined reference to `noecho'
+newmain.c:(.text+0x22): undefined reference to `stdscr'
+newmain.c:(.text+0x2f): undefined reference to `keypad'
+newmain.c:(.text+0xa9): undefined reference to `new_item'
+newmain.c:(.text+0xdf): undefined reference to `new_menu'
+newmain.c:(.text+0xe9): undefined reference to `LINES'
+newmain.c:(.text+0x104): undefined reference to `mvprintw'
+newmain.c:(.text+0x110): undefined reference to `post_menu'
+newmain.c:(.text+0x117): undefined reference to `stdscr'
+newmain.c:(.text+0x11f): undefined reference to `wrefresh'
+newmain.c:(.text+0x145): undefined reference to `menu_driver'
+newmain.c:(.text+0x158): undefined reference to `menu_driver'
+newmain.c:(.text+0x160): undefined reference to `stdscr'
+newmain.c:(.text+0x168): undefined reference to `wgetch'
+newmain.c:(.text+0x183): undefined reference to `free_item'
+newmain.c:(.text+0x196): undefined reference to `free_item'
+newmain.c:(.text+0x1a2): undefined reference to `free_menu'
+newmain.c:(.text+0x1a7): undefined reference to `endwin'
+collect2: error: ld returned 1 exit status
