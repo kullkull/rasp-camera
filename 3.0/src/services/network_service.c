@@ -81,9 +81,10 @@ serv_port = atoi((char*)arg);
 
 	while(_wait_for_clnt())
 	{	
-		
+		pthread_mutex_lock(&mutex);
 		NET_IRQ=_receive_string_from_clnt();
 		pthread_cond_signal(&cond);
+		pthread_mutex_unlock(&mutex);
 		close(clnt_fd);
 		
 	}
