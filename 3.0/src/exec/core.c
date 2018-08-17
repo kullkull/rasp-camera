@@ -30,7 +30,8 @@ pthread_cond_init(&cond,NULL);
 
 if(pipe(__pipe) == -1)
 	return -1;
-
+	
+pthread_mutex_lock(&mutex);
 	network	  = start_service(network_service,argv[1]);
 	camera    = start_service(camera_service,(void*)&__pipe[1]);
 	detection = start_service(detect_service,(void*)&__pipe[0]);
@@ -43,9 +44,9 @@ if(network == NULL || camera == NULL || detection == NULL)
 
 while(1)
 {
-	pthread_mutex_lock(&mutex);
-	pthread_cond_wait(&cond,&mutex);
-	pthread_mutex_unlock(&mutex);
+	
+pthread_cond_wait(&cond,&mutex);
+pthread_mutex_unlock(&mutex);
 
 	if(NET_IRQ != 0 )
 	{	
