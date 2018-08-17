@@ -1,0 +1,4 @@
+/tmp/ccrrDRcH.o: In function `main':
+threa.c:(.text+0x10a): undefined reference to `pthread_create'
+threa.c:(.text+0x153): undefined reference to `pthread_join'
+collect2: error: ld returned 1 exit status

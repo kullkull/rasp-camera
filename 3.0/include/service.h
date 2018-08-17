@@ -5,6 +5,7 @@ pthread_t* start_service(void* (*service)(void*),char *arg);
 void*	camera_service(void*);
 void*   detect_service(void*);
 
+void _send_data_to_clnt(int option);
 
 #endif
 

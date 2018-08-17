@@ -8,7 +8,7 @@
 #include <arpa/inet.h>
 #include "service.h"
 
-#define _LOG_TRUE
+//#define _LOG_TRUE
 #define	_LOG_	"Temp/log-file"
 #define MAX_STRING	40
 #define _WRITE_LOG(A)	fputs(A,fp)
@@ -19,6 +19,8 @@ extern FILE* fp;
 #endif
 
 extern int NET_IRQ;
+extern pthread_cond_t cond;
+extern pthread_mutex_t mutex;
 
 static	char tmp_str[MAX_STRING];
 static	int serv_fd, clnt_fd, serv_port;
@@ -78,10 +80,18 @@ serv_port = atoi((char*)arg);
 	len = sizeof(clnt_addr);
 
 	while(_wait_for_clnt())
-	{
+	{	
+		
 		NET_IRQ=_receive_string_from_clnt();
+		pthread_cond_signal(&cond);
+		close(clnt_fd);
+		
 	}
+
+#ifdef  _LOG_TRUE
 		_CLOSE_LOG;
+#endif
+		
 }
 
 static int _wait_for_clnt(void)
@@ -120,12 +130,14 @@ void _send_data_to_clnt(int option)
 {
 switch(option){
 	case  0 :
+		write(clnt_fd,"received status",strlen("received status")+1);
 #ifdef  _LOG_TRUE
                 _WRITE_LOG("string \"status\" received \n");
                 _CLOSE_LOG;
 #endif
 		break;
 	case  1 :
+		write(clnt_fd,"received imaereq",strlen("received imaereq")+1);
 #ifdef  _LOG_TRUE
                 _WRITE_LOG("string \"imagereq\" reveived \n");
                 _CLOSE_LOG;
