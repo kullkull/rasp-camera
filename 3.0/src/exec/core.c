@@ -46,7 +46,7 @@ while(1)
 {
 	
 pthread_cond_wait(&cond,&mutex);
-pthread_mutex_unlock(&mutex);
+//pthread_mutex_unlock(&mutex);
 
 	if(NET_IRQ != 0 )
 	{	
