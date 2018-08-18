@@ -51,10 +51,6 @@ $(ODIR)/%.o: $(SDIR)/services/%.c
 	@$(CC) -c -o $@ $< $(CFLAGS)
 
 
-
-
-
-
 $(VERSION): $(OBJ)
 	@$(CC) -o bin/$@ $^ $(CFLAGS) $(LIBS)
 	@echo "Installation Successfull! $(VERSION)"
