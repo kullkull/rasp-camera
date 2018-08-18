@@ -8,7 +8,7 @@
 #include <arpa/inet.h>
 #include "service.h"
 
-//#define _LOG_TRUE
+#define _LOG_TRUE
 #define	_LOG_	"Temp/log-file"
 #define MAX_STRING	40
 #define _WRITE_LOG(A)	fputs(A,fp)
@@ -29,6 +29,7 @@ static  int len;
 
 static int _wait_for_clnt(void);
 static  int _receive_string_from_clnt(void);
+static void delete_enter_key(char* str);
 
 void* network_service(void* arg)
 {
@@ -78,23 +79,22 @@ serv_port = atoi((char*)arg);
     	}
 
 	len = sizeof(clnt_addr);
+	pthread_mutex_lock(&mutex);	//2
 
 	while(_wait_for_clnt())
-	{	
-		pthread_mutex_lock(&mutex);
-		NET_IRQ=_receive_string_from_clnt();
+	{
 		
-		pthread_cond_signal(&cond);
-		pthread_mutex_unlock(&mutex);
-		//have to unlock thread since signal doesn't reutrn mutex
+		NET_IRQ=_receive_string_from_clnt();		//3
+		pthread_cond_signal(&cond); //5
+		pthread_cond_wait(&cond,&mutex);// 6 start when siganl //12 arrives wait to aquire mutex;
 		close(clnt_fd);
-		
+
 	}
 
 #ifdef  _LOG_TRUE
 		_CLOSE_LOG;
 #endif
-		
+
 }
 
 static int _wait_for_clnt(void)
@@ -121,6 +121,7 @@ static  int _receive_string_from_clnt(void)
 {
 	char  recevbuff[MAX_STRING];
 	read(clnt_fd,recevbuff,MAX_STRING-1);
+	delete_enter_key(recevbuff);
 
 	if 	(	!strcmp(recevbuff, "status"	)	)
 		return 	0;
@@ -159,5 +160,19 @@ switch(option){
 		break;
 
 }
+
+}
+
+
+static void delete_enter_key(char* str)
+{
+
+for(int i=0; i < MAX_STRING ; i++ )
+	if(str[i] =='\n' || str[i] =='\r')
+	{
+		str[i]=0;
+		break;
+	}
+
 
 }

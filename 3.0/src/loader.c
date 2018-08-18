@@ -95,6 +95,8 @@ WINDOW* SLECT_W = create_window(SLECT_HEIGHT, SLECT_WIDTH, SLECT_POS_Y, SLECT_PO
 
 
 	int c;
+	char temp[8];	sprintf(temp,"%d",settings[0]);
+
 	while(true)
 	{   switch(c=wgetch(SLECT_W))
 	    {	case KEY_DOWN:
@@ -111,8 +113,17 @@ WINDOW* SLECT_W = create_window(SLECT_HEIGHT, SLECT_WIDTH, SLECT_POS_Y, SLECT_PO
 				free_menu(my_menu);
 				endwin();
 				if(!strcmp("Server - On [ Background Run ( Silent Mode ) ] ",item_name(current_item(my_menu))))
-					execl("bin/core","bin/core","9190",((char *)NULL));
-#ifdef	_DEBUG_MODE		
+				{	//create a deamon by makeing a zombie process
+				printf("The server is running in Background......\n");
+
+				int a = fork();
+				if(a ==0)
+					execl("bin/core","bin/core",temp,((char *)NULL));
+
+				}
+
+
+#ifdef	_DEBUG_MODE
 				else if(!strcmp("Server - Debugging Mode - On",item_name(current_item(my_menu))))
 					execl("bin/essentials","bin/essentials","9190",((char *)NULL)    );
 #endif
@@ -123,7 +134,7 @@ WINDOW* SLECT_W = create_window(SLECT_HEIGHT, SLECT_WIDTH, SLECT_POS_Y, SLECT_PO
 				else if(!strcmp("About",item_name(current_item(my_menu))))
 					execl("/bin/cat","cat",".credit",((char *)NULL));
 
-
+				printf("▶server port: %s Loader successfully closed!!\n",temp);
 				return 0;
 				break;
 

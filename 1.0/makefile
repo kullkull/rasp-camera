@@ -1,6 +1,6 @@
 IDIR=./include
 CC=gcc
-CFLAGS=-I$(IDIR) -lncurses -lpthread -lmenu
+CFLAGS=-I$(IDIR) -lncurses -lpthread -lmenu -g
 SDIR=./src
 ODIR=./obj
 LDI=./lib

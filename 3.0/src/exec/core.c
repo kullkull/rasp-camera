@@ -30,8 +30,9 @@ pthread_cond_init(&cond,NULL);
 
 if(pipe(__pipe) == -1)
 	return -1;
-	
-pthread_mutex_lock(&mutex);
+
+pthread_mutex_lock(&mutex);//Lock
+
 	network	  = start_service(network_service,argv[1]);
 	camera    = start_service(camera_service,(void*)&__pipe[1]);
 	detection = start_service(detect_service,(void*)&__pipe[0]);
@@ -44,15 +45,11 @@ if(network == NULL || camera == NULL || detection == NULL)
 
 while(1)
 {
-	
-pthread_cond_wait(&cond,&mutex);
-//pthread_mutex_unlock(&mutex);
-
-	if(NET_IRQ != 0 )
-	{	
-		net_irq_handle();
-		NET_IRQ = 0;
-	}
+pthread_cond_wait(&cond,&mutex); //Unlock 1 7
+printf("%d\n",NET_IRQ);
+net_irq_handle();//8		
+NET_IRQ = 0;//9
+pthread_cond_signal(&cond); //11
 
 }
 
@@ -65,19 +62,24 @@ return 0;
 
 
 
+
+
+
+
+
+
+
+
+
+
 static void net_irq_handle(void)
 {
 int __pid = fork();
 
 	if(__pid == 0 )
 	{
-		if(NET_IRQ == 1)
-			_send_data_to_clnt(0);
-		
-		else
-			_send_data_to_clnt(1);
-	
-	
+	_send_data_to_clnt(NET_IRQ);
+
         exit(0);
  	}
 

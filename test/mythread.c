@@ -8,6 +8,7 @@
 
 int     count = 0;
 pthread_cond_t count_threshold_cv;
+dd
 
 void *inc_count(void *t)
 {
