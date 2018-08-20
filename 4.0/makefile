@@ -5,7 +5,7 @@ SDIR=./src
 ODIR=./obj
 LDI=./lib
 LIBS=
-VERSION=rasp-3.0v
+VERSION=rasp-4.0v
 
 _DEPS=window.h
 DEPS=$(patsubst %,$(IDIR)/%,$(_DEPS))
@@ -16,7 +16,7 @@ OBJ=$(patsubst %,$(ODIR)/%,$(_OBJ))
 _DEPSE=network.h service.h
 DEPSE=$(patsubst %,$(IDIR)/%,$(_DEPSE))
 
-_OBJE=core.o network_service.o start_service.o camera_service.o detect_service.o queue.o irq_service.o
+_OBJE=core.o network_service.o camera_service.o detect_service.o queue.o irq_service.o
 OBJE=$(patsubst %,$(ODIR)/%,$(_OBJE))
 
 all :  pre-pos $(VERSION) core

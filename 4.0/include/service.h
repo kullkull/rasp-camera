@@ -1,11 +1,23 @@
 #ifndef _SERVICE_H_
 #define _SERVICE_H_
-#include <pthread.h>
-pthread_t* start_service(void* (*service)(void*),char *arg);
+
 void*	camera_service(void*);
 void*   detect_service(void*);
 void*	irq_service(void*);
 void _send_data_to_clnt(int option);
+
+#define  delete_enter_key(str)          for(int i=0; i < MAX_STRING ; i++ )             \
+                                                if(str[i] =='\n' || str[i] =='\r')      \
+                                                {                                       \
+                                                        str[i]=0;                       \
+                                                        break;                          \
+                                                }
+
+
+#define THREAD_LOCK	pthread_mutex_lock(&mutex)
+#define THREAD_UNLOCK	pthread_mutex_unlock(&mutex)
+#define THREAD_WAIT	pthread_cond_wait(&cond,&mutex);
+#define THREAD_SIG	pthread_cond_signal(&cond);
 
 #endif
 

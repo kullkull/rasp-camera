@@ -1,4 +1,4 @@
-//#include <pthread.h>
+#include <pthread.h>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -19,26 +19,27 @@
 #ifdef	_LOG_TRUE
 extern FILE* fp;
 #endif
-
 extern queue_t queue_irq;
-
-//extern int NET_IRQ;
-//extern pthread_cond_t cond;
-//extern pthread_mutex_t mutex;
-
+extern int current_status;
 static	char tmp_str[MAX_STRING];
-static	int serv_fd, clnt_fd, serv_port;
+static	int serv_fd, clnt_fd, serv_port,len;
 static struct sockaddr_in serv_addr, clnt_addr;
-static  int len;
+
 static int _init_network(void);
 static int _wait_for_clnt(void);
-static  int _receive_string_from_clnt(void);
-static void delete_enter_key(char* str);
+static int _receive_string_from_clnt(void);
 
 void* network_service(void* arg)
 {
 serv_port = atoi((char*)arg);
+
 queue_element network_irq={THREAD_ID,-1}; //PID, no_req initialized
+
+#ifdef	_LOG_TRUE
+	fp = fopen(_LOG_,"wt");
+	sprintf(tmp_str, "SERVER: SERVER PORT: %d\n", serv_port);
+	_WRITE_LOG(tmp_str);
+#endif
 
 
 if(_init_network() ==-1)
@@ -51,20 +52,6 @@ while(_wait_for_clnt())
 }
 
 
-/*
-	pthread_mutex_lock(&mutex);	//2
-
-	while(_wait_for_clnt())
-	{
-
-		NET_IRQ=_receive_string_from_clnt();		//3
-		pthread_cond_signal(&cond); //5
-		pthread_cond_wait(&cond,&mutex);// 6 start when siganl //12 arrives wait to aquire mutex;
-		close(clnt_fd);
-
-	}
-*/
-
 #ifdef  _LOG_TRUE
 		_CLOSE_LOG;
 #endif
@@ -74,15 +61,6 @@ while(_wait_for_clnt())
 
 static int _init_network(void)
 {
-
-#ifdef	_LOG_TRUE
-	fp = fopen(_LOG_,"wt");
-#endif
-
-#ifdef  _LOG_TRUE
-	sprintf(tmp_str, "SERVER: SERVER PORT: %d\n", serv_port);
-	_WRITE_LOG(tmp_str);
-#endif
 
 	if( (serv_fd = socket(AF_INET, SOCK_STREAM, 0)) == -1   )
 	{
@@ -155,11 +133,17 @@ static  int _receive_string_from_clnt(void)
 	else
 		return -1;
 }
+
+
+
 void _send_data_to_clnt(int option)
 {
 switch(option){
 	case  0 :
-		write(clnt_fd,"received status",strlen("received status")+1);
+		if(current_status ==0)
+		write(clnt_fd,"status_ok",strlen("status__ok")+1);
+		else
+		write(clnt_fd,"status_not_ok",strlen("status_not_ok")+1);
 #ifdef  _LOG_TRUE
                 _WRITE_LOG("string \"status\" received \n");
                 _CLOSE_LOG;
@@ -189,15 +173,3 @@ switch(option){
 }
 
 
-static void delete_enter_key(char* str)
-{
-
-for(int i=0; i < MAX_STRING ; i++ )
-	if(str[i] =='\n' || str[i] =='\r')
-	{
-		str[i]=0;
-		break;
-	}
-
-
-}
