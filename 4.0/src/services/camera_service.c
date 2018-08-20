@@ -22,7 +22,7 @@ void* camera_service(void* arg)
     float odd = 0.15;
     int i = 0, j = 0, dif = 0;
     float final = 0, result[3];
-    queue_t queue_detect={1,0};
+    queue_element queue_detect={1,0};
 
     while (1)
     {
