@@ -119,7 +119,6 @@ void    write_net_image(int fd,char *img){
             }
     
     }
+    close(data_fd);
     
-    
-   
 }
