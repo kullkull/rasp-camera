@@ -4,7 +4,13 @@
 void*	camera_service(void*);
 void*   detect_service(void*);
 void*	irq_service(void*);
-void _send_data_to_clnt(int option);
+void   write_net_string(int fd, char* str);
+void    write_net_image();
+
+
+
+
+
 
 #define  delete_enter_key(str)          for(int i=0; i < MAX_STRING ; i++ )             \
                                                 if(str[i] =='\n' || str[i] =='\r')      \

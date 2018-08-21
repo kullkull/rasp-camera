@@ -125,7 +125,7 @@ WINDOW* SLECT_W = create_window(SLECT_HEIGHT, SLECT_WIDTH, SLECT_POS_Y, SLECT_PO
 
 #ifdef	_DEBUG_MODE
 				else if(!strcmp("Server - Debugging Mode - On",item_name(current_item(my_menu))))
-					execl("bin/essentials","bin/essentials","9190",((char *)NULL)    );
+					execl("bin/admin","bin/admin","9190",((char *)NULL)    );
 #endif
 				else if(!strcmp("Default Settings",item_name(current_item(my_menu)))){
 					default_settings();

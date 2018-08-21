@@ -7,12 +7,12 @@
 #include "network.h"
 #include "queue.h"
 
-FILE *fp; //Debug
+FILE *__FILE_POINTER; //Logger
+int current_status = 0; //if detected =>1 else 0
 pthread_cond_t cond; //conditions to wake thread
 pthread_mutex_t mutex;
+queue_t irq_queue; //irq handler queue
 
-queue_t queue_irq; //irq handler queue
-int current_status = 0; //0 ok 1 detected
 
 int main(int argc, char *argv[])
 {
@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
 pthread_t  network, camera, detection, irq;
 int ret[4], __pipe[2];
 
-queue_create(&queue_irq);
+queue_create(&irq_queue);
 pthread_mutex_init(&mutex, NULL);
 pthread_cond_init(&cond,NULL);
 
@@ -38,7 +38,6 @@ if(pipe(__pipe) == -1)
 	if(pthread_create(&network,NULL,irq_service,(void*)NULL))
 		return -5;
 
-printf("All services are on\n");
 THREAD_UNLOCK;//----------------------------------------------------------------------------
 
 

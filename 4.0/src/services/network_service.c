@@ -2,174 +2,124 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include<fcntl.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include "service.h"
 #include "queue.h"
+#include "sanggu.h"
 
-#define THREAD_ID	0
-//#define _LOG_TRUE
-#define	_LOG_	"Temp/log-file"
-#define MAX_STRING	40
-#define _WRITE_LOG(A)	fputs(A,fp)
-#define _CLOSE_LOG	fclose(fp)
+extern queue_t irq_queue;
 
-#ifdef	_LOG_TRUE
-extern FILE* fp;
-#endif
-extern queue_t queue_irq;
-extern int current_status;
-static	char tmp_str[MAX_STRING];
-static	int serv_fd, clnt_fd, serv_port,len;
-static struct sockaddr_in serv_addr, clnt_addr;
+static int init_network(int*,int*,struct sockaddr_in*, struct sockaddr_in*);
+static int wait_for_clnt(int *, int *, int *,struct sockaddr_in*,struct sockaddr_in*,int*);
+static int parse_net_string(int *clnt_fd);
 
-static int _init_network(void);
-static int _wait_for_clnt(void);
-static int _receive_string_from_clnt(void);
 
 void* network_service(void* arg)
 {
-serv_port = atoi((char*)arg);
+    
+int serv_fd, clnt_fd, len, serv_port = atoi((char*)arg);
+struct sockaddr_in serv_addr, clnt_addr;
+queue_element irq_net={IRQ_NET,-1,0}; //PID, no_req initialized
 
-queue_element network_irq={THREAD_ID,-1}; //PID, no_req initialized
+    if( init_network(&serv_fd,&serv_port,&serv_addr,&clnt_addr) ==-1 ){
+                irq_net.req = IRQ_NET_INIT_ERR;
+        	queue_enqueue(&irq_queue,irq_net);
+    }
+    else
+    {
+            while(1)
+            {  
+                if(    wait_for_clnt(&serv_fd,&clnt_fd,&serv_port,&serv_addr,&clnt_addr,&len)    )
+                {
+                    irq_net.req = parse_net_string(&clnt_fd);
+                    irq_net.flg = clnt_fd;
+                    queue_enqueue(&irq_queue,irq_net); //irq_service will handle the interruption..
+                    
+                }
+                else{
+                    irq_net.req = IRQ_NET_WAIT_ERR;
+                    queue_enqueue(&irq_queue,irq_net);
+                }
+           
+            }
+            
+    }
+}
 
-#ifdef	_LOG_TRUE
-	fp = fopen(_LOG_,"wt");
-	sprintf(tmp_str, "SERVER: SERVER PORT: %d\n", serv_port);
-	_WRITE_LOG(tmp_str);
-#endif
-
-
-if(_init_network() ==-1)
-	return NULL;
-
-while(_wait_for_clnt())
+static int init_network(int *serv_fd, int *serv_port,struct sockaddr_in *serv_addr,struct sockaddr_in *clnt_addr)
 {
-	network_irq.req = _receive_string_from_clnt();
-	queue_enqueue(&queue_irq,network_irq); //irq_service will handle the interruption..
+	if( (*serv_fd = socket(AF_INET, SOCK_STREAM, 0)) == -1   )
+		return -1;
+        
+	memset(serv_addr, 0, sizeof(*serv_addr));
+	memset(clnt_addr, 0, sizeof(*clnt_addr));
+        
+	serv_addr->sin_family = AF_INET;
+	serv_addr->sin_addr.s_addr = htonl(INADDR_ANY);
+	serv_addr->sin_port = htons(*serv_port);
+
+ 	if (   bind(*serv_fd, (struct sockaddr*)serv_addr, sizeof(*serv_addr)) < 0   )
+            return -1;
+	if (   listen(*serv_fd, 5)<0    )
+            return -1;
+ 
 }
 
 
-#ifdef  _LOG_TRUE
-		_CLOSE_LOG;
-#endif
-
-}
-
-
-static int _init_network(void)
+static int wait_for_clnt(int *serv_fd, int *clnt_fd ,int *serv_port,struct sockaddr_in *serv_addr,struct sockaddr_in *clnt_addr,int * len)
 {
-
-	if( (serv_fd = socket(AF_INET, SOCK_STREAM, 0)) == -1   )
-	{
-#ifdef  _LOG_TRUE
-		_WRITE_LOG("Socket ERR\n");
-		_CLOSE_LOG;
-#endif
-		return -1;
-	}
-
-	memset(&serv_addr, 0, sizeof(serv_addr));
-	memset(&clnt_addr, 0, sizeof(clnt_addr));
-
-	serv_addr.sin_family = AF_INET;
-	serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-	serv_addr.sin_port = htons(serv_port);
-
- 	if (bind(serv_fd, (struct sockaddr*)&serv_addr, sizeof(serv_addr)) < 0)
-    	{
-#ifdef  _LOG_TRUE
-  		_WRITE_LOG("Bind ERR\n");
-		_CLOSE_LOG;
-#endif
-		return -1;
-    	}
-
-	if (listen(serv_fd, 5)<0)
-	{
-#ifdef  _LOG_TRUE
-		_WRITE_LOG("Listen ERR\n");
-		_CLOSE_LOG;
-#endif
-		return -1;
-    	}
-
-}
-
-
-static int _wait_for_clnt(void)
-{
-
-len = sizeof(clnt_addr);
-	if(     (clnt_fd = accept(serv_fd, (struct sockaddr*)&clnt_addr, &len))   == -1        )
-	{
-#ifdef  _LOG_TRUE
-		_WRITE_LOG("Accept ERR\n");
-		_CLOSE_LOG;
-#endif
+        *len = sizeof(*clnt_addr);
+	if( (*clnt_fd = accept(*serv_fd, (struct sockaddr*)clnt_addr, len)) == -1   )
 		return 0;
-	}
-#ifdef	_LOG_TRUE
-	char clnt_ip_addr[20];
-	inet_ntop(AF_INET, &clnt_addr.sin_addr.s_addr, clnt_ip_addr, sizeof(clnt_ip_addr));
-        sprintf(tmp_str, "SERVER: %s client connected \n", clnt_ip_addr);
-	_WRITE_LOG(tmp_str);
-#endif
+        else
 		return 1;
 }
 
-static  int _receive_string_from_clnt(void)
+static  int parse_net_string(int *clnt_fd)
 {
-	char  recevbuff[MAX_STRING];
-	read(clnt_fd,recevbuff,MAX_STRING-1);
+        char  recevbuff[MAX_STRING];
+//FIXME :IF READ ONLY FEW CHARACTERS???........................................................................
+	read(*clnt_fd,recevbuff,MAX_STRING-1);
 	delete_enter_key(recevbuff);
 
-	if 	(	!strcmp(recevbuff, "status"	)	)
+        
+        
+	if 	(  !strcmp(recevbuff, "status"	)  )
 		return 	0;
-        else if (	!strcmp(recevbuff,"imagereq")	)
+        else if (  !strcmp(recevbuff,"imagereq" )  )
 		return 	1;
 	else
 		return -1;
 }
 
 
-
-void _send_data_to_clnt(int option)
-{
-switch(option){
-	case  0 :
-		if(current_status ==0)
-		write(clnt_fd,"status_ok",strlen("status__ok")+1);
-		else
-		write(clnt_fd,"status_not_ok",strlen("status_not_ok")+1);
-#ifdef  _LOG_TRUE
-                _WRITE_LOG("string \"status\" received \n");
-                _CLOSE_LOG;
-#endif
-		break;
-	case  1 :
-		write(clnt_fd,"received imaereq",strlen("received imaereq")+1);
-#ifdef  _LOG_TRUE
-                _WRITE_LOG("string \"imagereq\" reveived \n");
-                _CLOSE_LOG;
-#endif
-		break;
-
-	case -1 :
-#ifdef  _LOG_TRUE
-                _WRITE_LOG("Error occured while reading string from clnt \n");
-                _CLOSE_LOG;
-#endif
-
-		break;
-
-    default:
-		break;
-
-}
-	close(clnt_fd);
+void   write_net_string(int fd, char *str){
+    
+    write(fd,str,strlen(str));
+    
 }
 
-
+void    write_net_image(int fd,char *img){
+    
+    int readn, data_fd = open(img,O_RDONLY);
+    char data[MAX_DATA];
+    
+    if(data_fd == -1)
+        return;
+    else
+    {    
+    while (    readn = read(data_fd, data, MAX_DATA - 1)   )
+            {
+                write(fd, data, readn);
+                memset(data, 0, sizeof(data));
+            }
+    
+    }
+    
+    
+   
+}

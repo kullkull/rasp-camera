@@ -4,6 +4,7 @@
 typedef struct _queue_element{
 int pid; //pid=0 network, pid=1, cam pid=2, ....
 int req; //request
+int flg;
 } queue_element;
 
 typedef struct _queue_node{
@@ -25,5 +26,26 @@ void queue_enqueue(queue_t *queue ,queue_element data);
 queue_node* queue_dequeue(queue_t* queue);
 void queue_print(queue_t* queue);
 void queue_free(queue_node* node);
+
+//Define IRQ REQUEST
+#define     DETECTED    1
+#define     SAFE        0
+
+
+
+#define     IRQ_NET     0
+#define     IRQ_CAM     1
+#define     IRQ_DET     2
+
+
+#define     IRQ_NET_STATUS_REQ          0
+#define     IRQ_NET_IMAGE_REQ           1
+#define     IRQ_NET_INIT_ERR            2
+#define     IRQ_NET_WAIT_ERR            3   
+
+
+#define     IRQ_DET_DETECT    1
+#define     IRQ_DET_NODECT    0
+
 
 #endif

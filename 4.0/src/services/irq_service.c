@@ -1,30 +1,34 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include <pthread.h>
 #include "queue.h"
 #include "service.h"
 
-extern queue_t queue_irq;
+extern queue_t irq_queue;
+extern int current_status;
 extern pthread_mutex_t mutex;
 extern pthread_cond_t cond;
 
-static void perform_task(int pid, int req);
+static void perform_task(int,int,int);
 
 
 void* irq_service(void* arg)
 {
 
 THREAD_LOCK; //Block until all services are deployed..
-printf("irq service is now on!\n");
 THREAD_UNLOCK;
+
+
 
 while(1)
 {
 
-	if( queue_irq.size > 0 )
+	if( irq_queue.size > 0 )
 	{
-	queue_node *task = queue_dequeue(&queue_irq);
-	perform_task(task->data->pid,task->data->req); 
+        queue_print(&irq_queue);
+	queue_node *task = queue_dequeue(&irq_queue);
+	perform_task(task->data->pid,task->data->req,task->data->flg); 
 	queue_free(task);
 	}
 
@@ -32,29 +36,53 @@ while(1)
 }
 
 
-static void perform_task(int pid, int req)
+static void perform_task(int pid, int req, int clnt_fd)
 {
 
 switch(pid)
 {
-	case 0:		//pid == 0  =>  network request
-		switch(req)
-		{
-		//THREAD_LOCK; //Program may not work properly when preemtped by network service
-		case 0:  _send_data_to_clnt( 0);break;
-		case 1:  _send_data_to_clnt( 1);break;
-		default: _send_data_to_clnt(-1);break;
-		//THREAD_UNLOCK;
-		}
-		break;
+	case IRQ_NET:
+           switch(req)
+           {
+               //THREAD_LOCK; //Program may not work properly when preemtped by network service
+               case IRQ_NET_STATUS_REQ: 
+                   if(current_status == DETECTED){
+                       write_net_string(clnt_fd,"status_not_ok");
+                       close(clnt_fd);
+                   }
+                   else{
+                       write_net_string(clnt_fd,"status_ok");
+                       close(clnt_fd);
+                   }
+                   break;
+               case IRQ_NET_IMAGE_REQ:
+               {
+                       write_net_image(clnt_fd,"./Temp/image2.bmp");
+                       close(clnt_fd);
+               }
+                   break;
+               default              :           break;
+                 //THREAD_UNLOCK;
+           } 
+            break;
+            
+	case IRQ_CAM:		
 
-	case 1:		//detect request
+	break;
 
-		break;
-
-	case 2:		//cam request
-
-		break;
+	case IRQ_DET:		
+            switch(req)
+            {
+                case IRQ_DET_DETECT :
+                    current_status = 1;
+                    system("php ./php/push_notification.php >/dev/null 2>&1");
+                break;
+                default :   
+                    current_status =0;       
+                break;        
+            }
+            
+	break;
 
 	case 3:		//others...
 
