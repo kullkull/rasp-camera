@@ -10,9 +10,15 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
+            <file>file:/home/lee/바탕화면/라즈베리파이/4.0/include/sanggu.h</file>
             <file>file:/home/lee/바탕화면/라즈베리파이/4.0/src/fundamental/queue.c</file>
+            <file>file:/home/lee/바탕화면/라즈베리파이/4.0/src/services/detect_service.c</file>
+            <file>file:/home/lee/바탕화면/라즈베리파이/4.0/src/services/camera_service.c</file>
+            <file>file:/home/lee/바탕화면/라즈베리파이/4.0/src/exec/core.c</file>
             <file>file:/home/lee/바탕화면/라즈베리파이/4.0/src/services/irq_service.c</file>
             <file>file:/home/lee/바탕화면/라즈베리파이/4.0/include/queue.h</file>
+            <file>file:/home/lee/바탕화면/라즈베리파이/4.0/include/service.h</file>
+            <file>file:/home/lee/바탕화면/라즈베리파이/4.0/src/services/network_service.c</file>
         </group>
     </open-files>
 </project-private>

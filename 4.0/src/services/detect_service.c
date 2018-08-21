@@ -5,23 +5,14 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <stdio.h>
 #include "queue.h"
 
 //created by Kim jung yeon
 
 extern queue_t irq_queue;
-
-
 void* detect_service(void* arg){
-/*
 
-#	detect_service:
-		1. the cam_service transmits data using pipe
-		2. read function will be unblocked and data calculations will begin.
-		3. if detects intrusion this service will call queue_enqueue function.
-*/
-    
-    
  int wfd , fd, ffd,readn = 1, writen = 0 ;
     char buf[3], buff[3], gar[51];
     float odd = 0.15;
@@ -35,7 +26,6 @@ void* detect_service(void* arg){
         dif = 0;
         readn = 1;
         memset(gar, 0x00, sizeof(gar));
-
         if (((fd = open("./Temp/image1.bmp", O_RDONLY)) != -1) && ((ffd = open("./Temp/image2.bmp", O_RDONLY)) != -1))
         {
             read(fd, gar, sizeof(gar));
@@ -76,13 +66,13 @@ void* detect_service(void* arg){
             final = (float)(dif) / (float)(i);
             if (final < odd)
             {
-                //current_status = 0;
+		queue_detect.req=IRQ_DET_NODETECT;
+		queue_enqueue(&irq_queue,queue_detect);
             }
             else
             {
 		queue_detect.req=IRQ_DET_DETECT;
 		queue_enqueue(&irq_queue,queue_detect);
-              //current_status = 1;
               
             }
             close(ffd);

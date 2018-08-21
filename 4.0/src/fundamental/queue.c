@@ -45,7 +45,7 @@ printf("Queue List : ");
 	queue_node *cur_node = queue -> front;
 	
 	for(int i = 0 ;  i < queue -> size; i++){		
-	printf("%d  ", cur_node -> data -> pid);
+	printf("%d  %d", cur_node -> data -> pid,cur_node ->data -> req);
 	cur_node = cur_node -> rnode;
 	}
 printf("\n");

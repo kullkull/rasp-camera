@@ -26,7 +26,6 @@ while(1)
 
 	if( irq_queue.size > 0 )
 	{
-        queue_print(&irq_queue);
 	queue_node *task = queue_dequeue(&irq_queue);
 	perform_task(task->data->pid,task->data->req,task->data->flg); 
 	queue_free(task);
@@ -61,7 +60,9 @@ switch(pid)
                        close(clnt_fd);
                }
                    break;
-               default              :           break;
+               default:
+			close(clnt_fd);
+	           break;
                  //THREAD_UNLOCK;
            } 
             break;

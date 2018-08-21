@@ -45,7 +45,7 @@ void queue_free(queue_node* node);
 
 
 #define     IRQ_DET_DETECT    1
-#define     IRQ_DET_NODECT    0
+#define     IRQ_DET_NODETECT    0
 
 
 #endif
